@@ -439,23 +439,14 @@
     
     <div id="payment-methods">
         <h3>Métodos de Pago</h3>
-        <button onclick="payWithCard()"><i class="fas fa-credit-card"></i> Pagar con Tarjeta</button>
         <button onclick="payWithQR()"><i class="fas fa-qrcode"></i> Pagar con QR</button>
-    </div>
-
-    <div id="payment-form" class="payment-form" style="display: none;">
-        <h3 style="color: #333; margin-bottom: 20px;">Datos de la Tarjeta</h3>
-        <input type="text" id="cardNumber" placeholder="Número de tarjeta">
-        <input type="text" id="cardHolder" placeholder="Titular de la tarjeta">
-        <input type="date" id="expiryDate" placeholder="Fecha de expiración">
-        <input type="text" id="cvv" placeholder="CVV">
-        <button onclick="generateInvoice()"><i class="fas fa-file-invoice"></i> Generar Factura</button>
     </div>
 
     <div id="qrCodeContainer">
         <h3>Escanea el código QR para realizar el pago</h3>
         <div id="qrCode"></div>
         <p style="margin-top: 20px; color: #666;">Total a pagar: Bs <span id="qrTotal">0</span></p>
+        <button onclick="generateInvoice()" style="margin-top: 15px;"><i class="fas fa-file-invoice"></i> Generar Factura</button>
     </div>
 </div>
 
@@ -494,6 +485,13 @@
         
         if (section === 'carrito') {
             updateCartDisplay();
+            // Asegura que al entrar al carrito se muestra directamente la opción de pago QR 
+            // y el botón de generar factura esté disponible si hay items.
+            if (cart.length > 0) {
+                payWithQR(); 
+            } else {
+                document.getElementById('qrCodeContainer').style.display = 'none';
+            }
         }
     }
 
@@ -550,6 +548,7 @@
                 </div>
             `;
             cartTotal.innerHTML = '';
+            document.getElementById('qrCodeContainer').style.display = 'none'; // Ocultar QR si está vacío
             return;
         }
         
@@ -573,18 +572,26 @@
         });
 
         cartTotal.innerHTML = `<strong>Total: Bs ${total}</strong>`;
+        
+        // Al actualizar el display, re-generar el QR si es visible
+        if (document.getElementById('qrCodeContainer').style.display !== 'none') {
+            payWithQR();
+        }
     }
 
-    function payWithCard() {
-        document.getElementById('payment-form').style.display = 'block';
-        document.getElementById('qrCodeContainer').style.display = 'none';
-    }
+    // ELIMINADO: function payWithCard() { ... }
 
     function payWithQR() {
         const total = cart.reduce((sum, item) => sum + item.price, 0);
+        
+        if (total === 0) {
+            alert('El carrito está vacío. Agregue productos para pagar.');
+            document.getElementById('qrCodeContainer').style.display = 'none';
+            return;
+        }
+        
         document.getElementById('qrTotal').textContent = total;
         document.getElementById('qrCodeContainer').style.display = 'block';
-        document.getElementById('payment-form').style.display = 'none';
         
         const paymentData = `SPORT SCZ - Total: Bs ${total}`;
         QRCode.toCanvas(document.createElement('canvas'), paymentData, {
