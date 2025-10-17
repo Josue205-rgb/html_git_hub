@@ -1,5 +1,4 @@
 # html_git_hub
-<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
